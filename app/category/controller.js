@@ -7,7 +7,6 @@ module.exports={
             const alertStatus = req.flash('alertStatus')
 
             const alert = { message: alertMessage, status: alertStatus }
-            console.log('ini alert', alert)
             let category = await Category.find()
             res.render('admin/category/view_category', {
                 category,
