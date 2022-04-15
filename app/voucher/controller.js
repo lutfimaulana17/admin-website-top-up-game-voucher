@@ -13,6 +13,9 @@ module.exports={
 
             const alert = { message: alertMessage, status: alertStatus }
             let voucher = await Voucher.find()
+            .populate('category')
+            .populate('nominals')
+            
             res.render('admin/voucher/view_voucher', {
                 voucher,
                 alert
