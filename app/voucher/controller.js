@@ -93,38 +93,85 @@ module.exports={
             res.redirect('/voucher')
         }
     },
-    // viewEdit: async (req, res) => {
-    //     try {
-    //         const { id } = req.params
-    //         const nominal = await Nominal.findOne({ _id: id })
+    viewEdit: async (req, res) => {
+        try {
+            const { id } = req.params
+            const category = await Category.find()
+            const nominal = await Nominal.find()
+            const voucher = await Voucher.findOne({ _id: id })
+                .populate('category')
+                .populate('nominals')
             
-    //         res.render('admin/nominal/edit', {
-    //             nominal
-    //         })
-    //     } catch (err) {
-    //         req.flash('alertMessage', `${err.message}`)
-    //         req.flash('alertStatus', 'danger')
-    //         res.redirect('/nominal')
-    //     }
-    // },
-    // actionEdit: async (req, res) => {
-    //     try {
-    //         const { id } = req.params
-    //         const { coinName, coinQuantity, price } = req.body
-    //         await Nominal.findOneAndUpdate({
-    //             _id: id
-    //         },{ coinName, coinQuantity, price })
+            res.render('admin/voucher/edit', {
+                voucher,
+                category,
+                nominal
+            })
+        } catch (err) {
+            req.flash('alertMessage', `${err.message}`)
+            req.flash('alertStatus', 'danger')
+            res.redirect('/voucher')
+        }
+    },
+    actionEdit: async (req, res) => {
+        try {
+            const { id } = req.params
+            const { name, category, nominals } = req.body
 
-    //         req.flash('alertMessage', 'Berhasil ubah nominal')
-    //         req.flash('alertStatus', 'success')
-            
-    //         res.redirect('/nominal')
-    //     } catch (err) {
-    //         req.flash('alertMessage', `${err.message}`)
-    //         req.flash('alertStatus', 'danger')
-    //         res.redirect('/nominal')
-    //     }
-    // },
+            if(req.file) {
+                let tmp_path = req.file.path
+                let originalExt = req.file.originalname.split('.')[req.file.originalname.split('.').length - 1]
+                let filename = req.file.filename + '.' + originalExt
+                let target_path = path.resolve(config.rootPath, `public/uploads/${filename}`)
+
+                const src = fs.createReadStream(tmp_path)
+                const dest = fs.createWriteStream(target_path)
+
+                src.pipe(dest)
+
+                src.on('end', async () => {
+                    try {
+
+                        const voucher = await Voucher.findOne({ _id: id })
+                        let currentImage = `${config.rootPath}/public/uploads/${voucher.thumbnail}`
+                        if (fs.existsSync(currentImage)) {
+                            fs.unlinkSync(currentImage)
+                        }
+
+                        await Voucher.findOneAndUpdate({ _id: id }, {
+                            name,
+                            category,
+                            nominals,
+                            thumbnail: filename
+                        })
+
+                        req.flash('alertMessage', 'Berhasil ubah voucher')
+                        req.flash('alertStatus', 'success')
+                        res.redirect('/voucher')
+                    } catch (err) {
+                        req.flash('alertMessage', `${err.message}`)
+                        req.flash('alertStatus', 'danger')
+                        res.redirect('/voucher')
+                    }
+                })
+            } else {
+                await Voucher.findOneAndUpdate({ _id: id }, {
+                    name,
+                    category,
+                    nominals
+                })
+
+                req.flash('alertMessage', 'Berhasil ubah voucher')
+                req.flash('alertStatus', 'success')
+
+                res.redirect('/voucher')
+            }
+        } catch (err) {
+            req.flash('alertMessage', `${err.message}`)
+            req.flash('alertStatus', 'danger')
+            res.redirect('/voucher')
+        }
+    },
     // actionDelete: async (req, res) => {
     //     try {  
     //         const { id } = req.params
