@@ -98,5 +98,25 @@ module.exports={
             req.flash('alertStatus', 'danger')
             res.redirect('/payment')
         }
+    },
+    actionStatus: async (req, res) => {
+        try {
+            const { id } = req.params
+            const payment = await Payment.findOne({
+                _id: id
+            })
+            let status = payment.status === 'Y' ? 'N' : 'Y'
+
+            await Payment.findOneAndUpdate({_id: id}, { status })
+
+            req.flash('alertMessage', 'Berhasil update payment')
+            req.flash('alertStatus', 'success')
+
+            res.redirect('/payment')
+        } catch (err) {
+            req.flash('alertMessage', `${err.message}`)
+            req.flash('alertStatus', 'danger')
+            res.redirect('/payment')
+        }
     }
 }
