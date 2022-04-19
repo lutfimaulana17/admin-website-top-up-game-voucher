@@ -13,8 +13,26 @@ module.exports={
                 transaction,
                 alert,
                 name: req.session.user.name,
-                title: "Halaman jenis pembayaran"
+                title: "Halaman transaksi"
             })
+        } catch (err) {
+            req.flash('alertMessage', `${err.message}`)
+            req.flash('alertStatus', 'danger')
+            res.redirect('/transaction')
+        }
+    },
+    actionStatus: async (req, res) => {
+        try {
+            const { id } = req.params
+            const { status } = req.query
+
+            await Transaction.findOneAndUpdate({_id: id}, {
+                status
+            })
+
+            req.flash('alertMessage', 'Berhasil ubah status')
+            req.flash('alertStatus', 'success')
+            res.redirect('/transaction')
         } catch (err) {
             req.flash('alertMessage', `${err.message}`)
             req.flash('alertStatus', 'danger')
