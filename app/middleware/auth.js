@@ -16,7 +16,7 @@ module.exports = {
         try {
             const token = req.headers.authorization ? req.headers.authorization.replace('Bearer ', '') : null
             const data = jwt.verify(token, config.jwtKey)
-            const player = Player.findOne({ _id: data.player.id })
+            const player = await Player.findOne({ _id: data.player.id })
             
             if (!player) {
                 throw new Error()
